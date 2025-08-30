@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Calculator</title>
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #fafafa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+  }
+  h1 {
+    margin-bottom: 24px;
+    color: #2c3e50;
+    font-weight: 700;
+  }
+  .calc-container {
+    background: #fff;
+    padding: 22px 24px;
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    width: 340px;
+  }
+  .display {
+    background-color: #222;
+    color: #fff;
+    font-size: 2.2rem;
+    padding: 16px 14px;
+    border-radius: 8px;
+    text-align: right;
+    margin-bottom: 18px;
+    min-height: 56px;
+    overflow-x: auto;
+    -webkit-user-select: none;
+-moz-user-select: none;
+-ms-user-select: none;
+user-select: none;
+
+  }
+  .buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  button {
+    padding: 20px 0;
+    font-size: 1.3rem;
+    border: none;
+    border-radius: 8px;
+    background-color: #e7e7e7;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+  }
+  button.operator {
+    background-color: #ff9500;
+    color: #fff;
+  }
+  button.operator:hover {
+    background-color: #cc7a00;
+  }
+  button.equals {
+    background-color: #27ae60;
+    color: white;
+  }
+  button.equals:hover {
+    background-color: #1e8449;
+  }
+  button.clear {
+    background-color: #e74c3c;
+    color: white;
+  }
+  button.clear:hover {
+    background-color: #c0392b;
+  }
+  button:hover {
+    background-color: #d0d0d0;
+  }
+</style>
+</head>
+<body>
+  <h1>CALCULATOR</h1>
+  <section class="calc-container">
+    <div id="result" class="display">0</div>
+    <div class="buttons-grid">
+      <button id="clearBtn" class="clear">C</button>
+      <button id="backspaceBtn">⌫</button>
+      <button id="sqrtBtn">√</button>
+      <button class="operator" data-op="/">÷</button>
+
+      <button data-num="7">7</button>
+      <button data-num="8">8</button>
+      <button data-num="9">9</button>
+      <button class="operator" data-op="*">×</button>
+
+      <button data-num="4">4</button>
+      <button data-num="5">5</button>
+      <button data-num="6">6</button>
+      <button class="operator" data-op="-">−</button>
+
+      <button data-num="1">1</button>
+      <button data-num="2">2</button>
+      <button data-num="3">3</button>
+      <button class="operator" data-op="+">+</button>
+
+      <button data-num="0">0</button>
+      <button data-num=".">.</button>
+      <button id="percentBtn">%</button>
+      <button id="equalsBtn" class="equals">=</button>
+    </div>
+  </section>
+
+<script>
+  const resultDisplay = document.getElementById('result');
+  const buttons = document.querySelectorAll('button');
+  let expression = '';
+  let lastChar = '';
+
+  const isOperator = char => ['+', '-', '*', '/'].includes(char);
+
+  function getLastNumber(str) {
+    const match = str.match(/(-?\d+\.?\d*)$/);
+    return match ? match[0] : null;
+  }
+
+  function updateResult(value) {
+    resultDisplay.textContent = value || '0';
+  }
+
+  buttons.forEach(button => {
+    button.addEventListener('click', () => {
+      const num = button.getAttribute('data-num');
+      const op = button.getAttribute('data-op');
+      const id = button.id;
+
+      if (id === 'clearBtn') {
+        expression = '';
+        lastChar = '';
+        updateResult(expression);
+        return;
+      }
+
+      if (id === 'backspaceBtn') {
+        if (expression.length) {
+          expression = expression.slice(0, -1);
+          updateResult(expression);
+          lastChar = expression.slice(-1) || '';
+        }
+        return;
+      }
+
+      if (id === 'sqrtBtn') {
+        if (!expression) return;
+        const lastNumber = getLastNumber(expression);
+        if (!lastNumber) return;
+        const numValue = parseFloat(lastNumber);
+        if (numValue < 0) {
+          updateResult('Error');
+          expression = '';
+          lastChar = '';
+          return;
+        }
+        const sqrtVal = Math.sqrt(numValue).toString();
+        const idx = expression.lastIndexOf(lastNumber);
+        expression = expression.slice(0, idx) + sqrtVal;
+        updateResult(expression);
+        lastChar = sqrtVal.slice(-1);
+        return;
+      }
+
+      if (id === 'percentBtn') {
+        if (!expression) return;
+        const lastNumber = getLastNumber(expression);
+        if (!lastNumber) return;
+        const idx = expression.lastIndexOf(lastNumber);
+        const percentVal = (parseFloat(lastNumber) / 100).toString();
+        expression = expression.slice(0, idx) + percentVal;
+        updateResult(expression);
+        lastChar = percentVal.slice(-1);
+        return;
+      }
+
+      if (num !== null) {
+        if (num === '.') {
+          const lastNumber = getLastNumber(expression) || '';
+          if (lastNumber.includes('.')) return;
+          if (!expression || isOperator(lastChar)) {
+            expression += '0';
+          }
+        }
+        expression += num;
+        updateResult(expression);
+        lastChar = num;
+        return;
+      }
+
+      if (op !== null) {
+        if (!expression) return;
+        if (isOperator(lastChar)) {
+          expression = expression.slice(0, -1) + op;
+        } else {
+          expression += op;
+        }
+        updateResult(expression);
+        lastChar = op;
+        return;
+      }
+
+      if (id === 'equalsBtn') {
+        if (!expression) return;
+        if (isOperator(expression.slice(-1))) {
+          expression = expression.slice(0, -1);
+        }
+        try {
+          // Use Function constructor instead of eval for slight improvement
+          const result = Function(`return ${expression}`)();
+          updateResult(result);
+          expression = result.toString();
+          lastChar = '';
+        } catch {
+          updateResult('Error');
+          expression = '';
+          lastChar = '';
+        }
+      }
+    });
+  });
+</script>
+</body>
+</html>

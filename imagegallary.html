@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Image Gallery</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f0f0;
+      color: #222;
+    }
+
+    h1 {
+      text-align: center;
+      padding: 20px 0;
+      font-size: 2em;
+    }
+
+    .filters {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .filters button {
+      padding: 8px 16px;
+      margin: 5px;
+      border: none;
+      background-color: #333;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+
+    .filters button:hover {
+      background-color: #555;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 12px;
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .gallery img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.3s, filter 0.3s;
+    }
+
+    .gallery img:hover {
+      transform: scale(1.04);
+      filter: brightness(0.9);
+    }
+
+    .lightbox {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 1000;
+    }
+
+    .lightbox img {
+      max-width: 90%;
+      max-height: 80%;
+      border-radius: 8px;
+    }
+
+    .lightbox .controls {
+      margin-top: 20px;
+    }
+
+    .lightbox button {
+      padding: 10px 14px;
+      margin: 0 8px;
+      border: none;
+      background-color: #fff;
+      color: #000;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .lightbox button:hover {
+      background-color: #ddd;
+    }
+
+    @media (max-width: 600px) {
+      .gallery img {
+        height: 160px;
+      }
+
+      .lightbox img {
+        max-height: 70%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Responsive Image Gallery</h1>
+
+  <div class="filters">
+    <button onclick="filterImages('all')">All</button>
+    <button onclick="filterImages('nature')">Nature</button>
+    <button onclick="filterImages('animals')">Animals</button>
+    <button onclick="filterImages('architecture')">Architecture</button>
+  </div>
+
+  <div class="gallery" id="gallery">
+    <img src="https://assets.weforum.org/article/image/0ZUBmNNVLRCfn3NdU55nQ00UF64m2ObtcDS0grx02fA.jpg" alt="Nature" data-category="nature">
+    <img src="https://static.vecteezy.com/system/resources/thumbnails/042/730/459/small/lion-danger-animal-wildlife-nature-forest-photo.jpg" alt="Animals" data-category="animals">
+    <img src="https://damassets.autodesk.net/content/dam/autodesk/draftr/23425/software-1.png" alt="Architecture" data-category="architecture">
+    <img src="https://nt.global.ssl.fastly.net/binaries/content/gallery/website/national/library/our-cause/on-the-shore-borrowdale-and-derwent-water-1518851.jpg?auto=webp&width=767&crop=16:9&dpr=2" alt="Nature" data-category="nature">
+    <img src="https://t4.ftcdn.net/jpg/05/06/97/33/360_F_506973329_NCSJOKETJUZjIW8udBA5LWfZ9vep4kV1.jpg" alt="Animals" data-category="animals">
+    <img src="https://blog.architizer.com/wp-content/uploads/Heydar-ALiyev-Center-in-Baku_cropped.jpg" alt="Architecture" data-category="architecture">
+  </div>
+
+  <div class="lightbox" id="lightbox">
+    <img src="" alt="Preview" id="lightbox-img">
+    <div class="controls">
+      <button onclick="prevImage()">Prev</button>
+      <button onclick="closeLightbox()">Close</button>
+      <button onclick="nextImage()">Next</button>
+    </div>
+  </div>
+
+  <script>
+    const galleryImages = document.querySelectorAll('.gallery img');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    let currentIndex = 0;
+    let filteredImages = [...galleryImages];
+
+    galleryImages.forEach((img, index) => {
+      img.addEventListener('click', () => openLightbox(index));
+    });
+
+    function openLightbox(index) {
+      currentIndex = index;
+      lightboxImg.src = filteredImages[currentIndex].src;
+      lightbox.style.display = 'flex';
+    }
+
+    function closeLightbox() {
+      lightbox.style.display = 'none';
+    }
+
+    function nextImage() {
+      currentIndex = (currentIndex + 1) % filteredImages.length;
+      lightboxImg.src = filteredImages[currentIndex].src;
+    }
+
+    function prevImage() {
+      currentIndex = (currentIndex - 1 + filteredImages.length) % filteredImages.length;
+      lightboxImg.src = filteredImages[currentIndex].src;
+    }
+
+    function filterImages(category) {
+      filteredImages = [];
+
+      galleryImages.forEach((img) => {
+        const match = category === 'all' || img.dataset.category === category;
+        img.style.display = match ? 'block' : 'none';
+        if (match) filteredImages.push(img);
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (lightbox.style.display === 'flex') {
+        if (e.key === 'ArrowRight') nextImage();
+        if (e.key === 'ArrowLeft') prevImage();
+        if (e.key === 'Escape') closeLightbox();
+      }
+    });
+  </script>
+
+</body>
+</html>
